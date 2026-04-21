@@ -1,0 +1,17 @@
+/* App.css is now mostly replaced by Tailwind CSS in index.css */
+/* Minimal overrides if needed */
+
+.animate-in {
+    animation-delay: var(--animation-delay, 0ms);
+}
+
+/* Custom scrollbar for webkit */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
