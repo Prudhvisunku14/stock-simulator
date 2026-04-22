@@ -9,6 +9,7 @@ import {
   Layers,
   Search,
   Shield,
+  ShieldAlert,
   Settings
 } from 'lucide-react';
 
@@ -23,8 +24,11 @@ const Sidebar = ({ user }) => {
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
-  const adminItem = { name: 'Admin', path: '/admin', icon: Shield };
-  const displayItems = user && user.role === 'ADMIN' ? [...navItems, adminItem] : navItems;
+  const adminItems = [
+    { name: 'Admin', path: '/admin', icon: Shield },
+    { name: 'Fraud Detection', path: '/admin/fraud', icon: ShieldAlert }
+  ];
+  const displayItems = user && user.role === 'ADMIN' ? [...navItems, ...adminItems] : navItems;
 
   return (
     <aside className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 py-6 hidden lg:flex flex-col overflow-y-auto z-40">

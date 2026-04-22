@@ -90,4 +90,21 @@ export const alertsAPI = {
   delete:   (id) => api.delete(`/alerts/${id}`),
 };
 
+// ── ADMIN ──────────────────────────────────────
+export const adminAPI = {
+  getSummary:   () => api.get('/admin/analytics/summary'),
+  getUsers:     () => api.get('/admin/analytics/users'),
+  getTrades:    () => api.get('/admin/analytics/trades'),
+  getSectors:   () => api.get('/admin/analytics/sectors'),
+  getStocks:    () => api.get('/admin/analytics/stocks'),
+  getAlerts:    () => api.get('/admin/analytics/alerts'),
+  controlStock: (data) => api.post('/admin/stocks/control', data),
+  adjustBalance:(userId, data) => api.post(`/admin/users/${userId}/balance`, data),
+  
+  // Fraud Detection
+  getFraudUsers:() => api.get('/admin/fraud/users'),
+  sendWarning:  (data) => api.post('/admin/fraud/warn', data),
+  disableUser:  (data) => api.post('/admin/fraud/disable', data),
+};
+
 export default api;

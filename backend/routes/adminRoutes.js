@@ -19,6 +19,12 @@ const adminMiddleware = require('../middleware/adminMiddleware');
 router.use(authMiddleware);
 router.use(adminMiddleware);
 
+const {
+  getSuspiciousUsers,
+  sendWarning,
+  disableUser
+} = require('../controllers/fraudController');
+
 // ── Analytics ────────────────────────────────────────────────
 router.get('/analytics/summary', getSummary);
 router.get('/analytics/users',   getUserAnalytics);
@@ -26,6 +32,11 @@ router.get('/analytics/trades',  getTradeAnalytics);
 router.get('/analytics/sectors', getSectorAnalytics);
 router.get('/analytics/stocks',  getStockAnalytics);
 router.get('/analytics/alerts',  getAlertAnalytics);
+
+// ── Fraud Detection ──────────────────────────────────────────
+router.get('/fraud/users',    getSuspiciousUsers);
+router.post('/fraud/warn',    sendWarning);
+router.post('/fraud/disable', disableUser);
 
 // ── Admin Controls ───────────────────────────────────────────
 router.post('/stocks/control',        controlStock);

@@ -26,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ─── Routes ──────────────────────────────────────────────────
 app.use('/api/auth',          require('./routes/authRoutes'));
+app.use('/api/user',          require('./routes/userRoutes'));
 app.use('/api/stocks',        require('./routes/stockRoutes'));
 app.use('/api/watchlist',     require('./routes/watchlistRoutes'));
 app.use('/api/ml',            require('./routes/mlRoutes'));
@@ -58,6 +59,7 @@ app.use((err, req, res, next) => {
 // ─── Start Server ─────────────────────────────────────────────
 const socketService = require('./services/socketService');
 const alertEngine   = require('./services/alertEngine');
+const fraudEngine   = require('./services/fraudDetectionEngine');
 const volatilityService = require('./services/volatilityService');
 
 const PORT = process.env.PORT || 5000;
@@ -68,6 +70,7 @@ socketService.init(server);
 
 // Start Background Services
 alertEngine.start();
+fraudEngine.start();
 volatilityService.start();
 
 server.listen(PORT, () => {

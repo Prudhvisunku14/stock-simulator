@@ -104,6 +104,14 @@ const login = async (req, res) => {
 
     const user = userResult.rows[0];
 
+    // Check if user is disabled
+    if (user.is_disabled) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Your account has been disabled. Please contact support.' 
+      });
+    }
+
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -151,11 +159,13 @@ const getProfile = async (req, res) => {
       [userId]
     );
 
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    const user = userResult.rows[0];
+
+    if (user.is_disabled) {
+      return res.status(403).json({ success: false, message: 'Account disabled' });
     }
 
-    res.json({ success: true, user: userResult.rows[0] });
+    res.json({ success: true, user });
 
   } catch (error) {
     console.error('Profile fetch error:', error);

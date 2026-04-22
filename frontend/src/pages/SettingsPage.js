@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
 import { 
   Settings, 
@@ -11,28 +11,63 @@ import {
   XCircle
 } from 'lucide-react';
 
+const Switch = ({ checked, onChange, disabled }) => (
+  <button 
+    onClick={() => onChange(!checked)}
+    disabled={disabled}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+  >
+    <span
+      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+    />
+  </button>
+);
+
 const SettingsPage = ({ user }) => {
-  const [globalAlerts, setGlobalAlerts] = useState(user.receive_global_alerts || false);
+  const [enabled, setEnabled] = useState(user.receive_global_alerts || false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
 
-  const handleToggle = async () => {
-    const newValue = !globalAlerts;
-    setGlobalAlerts(newValue);
+  useEffect(() => {
+    fetch("/api/user/settings", {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.receive_global_alerts !== 'undefined') {
+          setEnabled(data.receive_global_alerts);
+        }
+      })
+      .catch(err => console.error("Error fetching settings:", err));
+  }, []);
+
+  const handleToggle = async (value) => {
+    setEnabled(value);
     setSaving(true);
     setStatus(null);
 
     try {
-      await authAPI.updateSettings({ receive_global_alerts: newValue });
+      await fetch("/api/user/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          receive_global_alerts: value
+        })
+      });
       
       // Update local storage
-      const updatedUser = { ...user, receive_global_alerts: newValue };
+      const updatedUser = { ...user, receive_global_alerts: value };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
       setStatus({ type: 'success', text: 'Settings updated successfully' });
     } catch (err) {
       console.error('Settings update failed:', err);
-      setGlobalAlerts(!newValue);
+      setEnabled(!value);
       setStatus({ type: 'error', text: 'Failed to update settings' });
     } finally {
       setSaving(false);
@@ -91,15 +126,7 @@ const SettingsPage = ({ user }) => {
                 <p className="text-sm font-black text-gray-900">Enable Global Pattern Alerts</p>
                 <p className="text-xs text-gray-500 font-medium max-w-sm">Receive real-time notifications for high-confidence ML patterns across all active stocks, even if they aren't in your watchlist.</p>
               </div>
-              <button 
-                onClick={handleToggle}
-                disabled={saving}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${globalAlerts ? 'bg-primary' : 'bg-gray-200'} ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${globalAlerts ? 'translate-x-6' : 'translate-x-1'}`}
-                />
-              </button>
+              <Switch checked={enabled} onChange={handleToggle} disabled={saving} />
             </div>
 
             <div className="flex items-center justify-between opacity-50 cursor-not-allowed">

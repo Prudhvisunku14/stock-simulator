@@ -8,6 +8,7 @@ import TradePage from './pages/TradePage';
 import PortfolioPage from './pages/PortfolioPage';
 import MarketsPage from './pages/MarketsPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
+import AdminFraudPage from './pages/AdminFraudPage';
 import SettingsPage from './pages/SettingsPage';
 import Layout from './components/Layout';
 import './App.css';
@@ -72,7 +73,10 @@ function App() {
           
           {/* Admin Routes */}
           {user.role === 'ADMIN' && (
-            <Route path="/admin" element={<AdminAnalyticsPage user={user} />} />
+            <>
+              <Route path="/admin" element={<AdminAnalyticsPage user={user} />} />
+              <Route path="/admin/fraud" element={<AdminFraudPage user={user} />} />
+            </>
           )}
           
           <Route path="*" element={<Navigate to="/" replace />} />

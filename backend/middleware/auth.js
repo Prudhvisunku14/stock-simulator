@@ -19,13 +19,18 @@ const authMiddleware = async (req, res, next) => {
 
     // CRITICAL: Check if user exists and fetch role
     const { query } = require('../config/db');
-    const userResult = await query('SELECT id, role FROM users WHERE id = $1', [decoded.userId]);
+    const userResult = await query('SELECT id, role, is_disabled FROM users WHERE id = $1', [decoded.userId]);
     
     if (userResult.rows.length === 0) {
       return res.status(401).json({ success: false, message: 'User account no longer exists.' });
     }
 
     const user = userResult.rows[0];
+
+    // Block disabled users immediately
+    if (user.is_disabled) {
+      return res.status(403).json({ success: false, message: 'Account disabled' });
+    }
 
     // Attach user info to request
     req.user = { id: user.id, role: user.role };

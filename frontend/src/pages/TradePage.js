@@ -32,10 +32,25 @@ const TradePage = ({ user }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState(null);
   const [error, setError] = useState('');
+  const [availableStocks, setAvailableStocks] = useState([]);
 
   useEffect(() => {
     if (form.stock_symbol) fetchPrice();
   }, [form.stock_symbol]);
+
+  useEffect(() => {
+    const fetchStocks = async () => {
+      try {
+        const res = await stocksAPI.getAll();
+        if (res.data && res.data.data) {
+          setAvailableStocks(res.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load stocks', err);
+      }
+    };
+    fetchStocks();
+  }, []);
 
   const fetchPrice = async () => {
     try {
@@ -129,12 +144,20 @@ const TradePage = ({ user }) => {
                             <input 
                                 className="input uppercase font-bold text-lg" 
                                 name="stock_symbol" 
+                                list="stock-options"
                                 value={form.stock_symbol}
                                 onChange={(e) => setForm({...form, stock_symbol: e.target.value.toUpperCase()})}
                                 onBlur={fetchPrice}
                                 placeholder="e.g. RELIANCE" 
                                 required 
                             />
+                            <datalist id="stock-options">
+                                {availableStocks.map(stock => (
+                                    <option key={stock.symbol} value={stock.symbol}>
+                                        {stock.company_name || stock.symbol}
+                                    </option>
+                                ))}
+                            </datalist>
                         </div>
 
                         <div className="space-y-2">
@@ -147,7 +170,7 @@ const TradePage = ({ user }) => {
                                         onClick={() => setForm({ ...form, trade_type: type })}
                                         className={`flex-1 py-2 text-xs font-black rounded-lg transition-all ${form.trade_type === type ? (type === 'BUY' ? 'bg-success text-white shadow-md' : 'bg-danger text-white shadow-md') : 'text-gray-500 hover:bg-gray-200'}`}
                                     >
-                                        {type === 'BUY' ? 'LONG' : 'SHORT'}
+                                        {type === 'BUY' ? 'BUY' : 'SELL'}
                                     </button>
                                 ))}
                             </div>

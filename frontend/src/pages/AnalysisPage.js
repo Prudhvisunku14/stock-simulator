@@ -25,11 +25,14 @@ const AnalysisPage = ({ user }) => {
   const [symbol, setSymbol]           = useState(urlSymbol || 'TCS');
   const [timeframe, setTimeframe]     = useState('1d');
   const [error, setError]             = useState('');
+  const [patternFilter, setPatternFilter] = useState('STRONG');
 
   const chartContainerRef = useRef(null);
+  const tooltipRef = useRef(null);
   const chartInstance = useRef(null);
   const candleSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
+  const groupedPatternsRef = useRef({});
 
   // Sync state with URL param if it changes
   useEffect(() => {
@@ -139,6 +142,42 @@ const AnalysisPage = ({ user }) => {
     };
     window.addEventListener('resize', handleResize);
 
+    chart.subscribeCrosshairMove(param => {
+      if (!tooltipRef.current) return;
+      if (
+        param.point === undefined ||
+        !param.time ||
+        param.point.x < 0 ||
+        param.point.y < 0
+      ) {
+        tooltipRef.current.style.display = 'none';
+      } else {
+        const pats = groupedPatternsRef.current[param.time];
+        if (pats && pats.length > 0) {
+          tooltipRef.current.style.display = 'flex';
+          tooltipRef.current.style.left = param.point.x + 15 + 'px';
+          // Offset tooltip to avoid falling off bottom edge
+          tooltipRef.current.style.top = param.point.y > 300 ? (param.point.y - 80) + 'px' : param.point.y + 15 + 'px';
+          
+          tooltipRef.current.innerHTML = pats.map(p => {
+             const isBuy = p.signal === 'BUY';
+             const isSell = p.signal === 'SELL';
+             const color = isBuy ? '#10b981' : isSell ? '#ef4444' : '#eab308';
+             const icon = isBuy ? '▲' : isSell ? '▼' : '●';
+             return `
+               <div style="display: flex; align-items: center; gap: 8px;">
+                 <span style="color: ${color}; font-size: 10px;">${icon}</span>
+                 <span style="font-weight: 700; color: #1e293b;">${p.pattern_type}</span>
+                 <span style="font-size: 10px; font-weight: 800; color: #64748b; margin-left: auto;">${Math.round(p.probability * 100)}%</span>
+               </div>
+             `;
+          }).join('');
+        } else {
+          tooltipRef.current.style.display = 'none';
+        }
+      }
+    });
+
     return () => {
       window.removeEventListener('resize', handleResize);
       if (chartInstance.current) {
@@ -155,9 +194,7 @@ const AnalysisPage = ({ user }) => {
       const volumeData = [];
       const seen = new Set();
       
-      const markers = [];
-
-      candles.forEach((c, index) => {
+      candles.forEach((c) => {
         const timeSecs = Math.floor(new Date(c.timestamp || c.time).getTime() / 1000);
         if (!seen.has(timeSecs)) {
           seen.add(timeSecs);
@@ -183,24 +220,59 @@ const AnalysisPage = ({ user }) => {
       candleSeriesRef.current.setData(candleData);
       volumeSeriesRef.current.setData(volumeData);
       
-      // Auto markers for detected patterns (visualizing pattern history on chart)
-      patterns.forEach(p => {
+      const markers = [];
+      const grouped = {};
+      
+      let visiblePats = [...patterns];
+      if (patternFilter === 'HIDE') visiblePats = [];
+      
+      // Sort all patterns by probability highest first
+      visiblePats.sort((a, b) => b.probability - a.probability);
+      
+      // Filter top 5 strong patterns if STRONG
+      if (patternFilter === 'STRONG') {
+          visiblePats = visiblePats.filter(p => p.probability >= 0.6).slice(0, 5);
+      }
+
+      visiblePats.forEach(p => {
         const pTime = Math.floor(new Date(p.end_time).getTime() / 1000);
-        markers.push({
-            time: pTime,
-            position: p.signal === 'BUY' ? 'belowBar' : 'aboveBar',
-            color: p.signal === 'BUY' ? '#10b981' : '#ef4444',
-            shape: p.signal === 'BUY' ? 'arrowUp' : 'arrowDown',
-            text: p.pattern_type,
-        });
+        if (!grouped[pTime]) grouped[pTime] = [];
+        grouped[pTime].push(p);
+      });
+      
+      groupedPatternsRef.current = grouped;
+      
+      Object.keys(grouped).forEach(timeStr => {
+         const time = parseInt(timeStr);
+         const pats = grouped[timeStr];
+         const best = pats[0]; // Already sorted by probability
+         
+         const isBuy = best.signal === 'BUY';
+         const isSell = best.signal === 'SELL';
+         const color = isBuy ? '#10b981' : isSell ? '#ef4444' : '#eab308';
+         const shape = isBuy ? 'arrowUp' : isSell ? 'arrowDown' : 'circle';
+         const icon = isBuy ? '▲' : isSell ? '▼' : '●';
+         
+         let text = `${icon} ${best.pattern_type} (${Math.round(best.probability * 100)}%)`;
+         if (pats.length > 1) {
+             text += ` +${pats.length - 1}`;
+         }
+         
+         markers.push({
+             time,
+             position: isBuy ? 'belowBar' : 'aboveBar',
+             color,
+             shape,
+             text,
+             size: 0.8, // Reduced scale for text
+         });
       });
 
-      // Sort markers chronologically as required by lightweight-charts
-      const sortedMarkers = [...markers].sort((a, b) => a.time - b.time);
+      const sortedMarkers = markers.sort((a, b) => a.time - b.time);
       candleSeriesRef.current.setMarkers(sortedMarkers);
       chartInstance.current?.timeScale().fitContent();
     }
-  }, [candles, patterns]);
+  }, [candles, patterns, patternFilter]);
 
   const latestPrice = candles.length > 0 ? parseFloat(candles[candles.length - 1].close || candles[candles.length - 1].close_price) : null;
   const firstPrice  = candles.length > 0 ? parseFloat(candles[0].close || candles[0].close_price) : null;
@@ -304,13 +376,23 @@ const AnalysisPage = ({ user }) => {
                         <BarChart2 className="w-4 h-4 text-primary" />
                         Advanced Candlestick Chart
                     </h3>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                         <div className="flex bg-white rounded-md p-1 border border-gray-200">
+                             <button onClick={() => setPatternFilter('ALL')} className={`px-2 py-1 text-[10px] font-bold rounded ${patternFilter === 'ALL' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>All Patterns</button>
+                             <button onClick={() => setPatternFilter('STRONG')} className={`px-2 py-1 text-[10px] font-bold rounded ${patternFilter === 'STRONG' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Strong Only</button>
+                             <button onClick={() => setPatternFilter('HIDE')} className={`px-2 py-1 text-[10px] font-bold rounded ${patternFilter === 'HIDE' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Hide</button>
+                         </div>
                          <span className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-bold">LIVE</span>
                     </div>
                 </div>
                 
-                <div className="p-2">
-                    <div ref={chartContainerRef} className="w-full relative min-h-[450px]" />
+                <div className="p-2 relative">
+                    <div ref={chartContainerRef} className="w-full relative min-h-[450px]">
+                         <div 
+                             ref={tooltipRef} 
+                             className="absolute hidden z-50 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-xl p-3 text-sm flex-col gap-2 min-w-[200px] pointer-events-none transition-opacity duration-200"
+                         ></div>
+                    </div>
                 </div>
 
                 {loading && (
