@@ -107,8 +107,6 @@ ML_API_URL=http://localhost:8000/predict
 
 ---
 
-## 🤝 Contributing
-Contributions are welcome! If you have ideas for new ML models or UI improvements, feel free to fork and submit a PR.
 
 ---
 
