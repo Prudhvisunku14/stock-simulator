@@ -1,3 +1,4 @@
+
 // controllers/watchlistController.js
 // Manage user's watchlist
 
