@@ -1,6 +1,6 @@
 # 🚀 Stock Simulator: Real-Time Trading & ML Analysis
 
-![Stock Simulator Hero](./images/hero.png)
+
 
 ## 🌟 Project Overview
 Stock Simulator is a high-performance, full-stack trading simulation platform that combines real-time market dynamics with Machine Learning-driven insights.
