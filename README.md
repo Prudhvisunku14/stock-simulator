@@ -1,9 +1,12 @@
 # 🚀 Stock Simulator: Real-Time Trading & ML Analysis
 
-![Stock Simulator Hero](C:\Users\prudh\.gemini\antigravity\brain\cdf3e7a8-35f2-4e43-9ae8-8e68cedc329c\stock_simulator_hero_1777025537320.png)
+![Stock Simulator Hero](./images/hero.png)
 
 ## 🌟 Project Overview
-Stock Simulator is a high-performance, full-stack trading simulation platform that combines real-time market dynamics with Machine Learning-driven insights. Designed for both novice traders and data enthusiasts, the platform provides a risk-free environment to practice trading strategies, monitor market trends, and receive automated alerts based on sophisticated technical patterns.
+Stock Simulator is a high-performance, full-stack trading simulation platform that combines real-time market dynamics with Machine Learning-driven insights.
+
+![Signup Page](./images/Screenshot%202026-04-24%20154607.png)
+ Designed for both novice traders and data enthusiasts, the platform provides a risk-free environment to practice trading strategies, monitor market trends, and receive automated alerts based on sophisticated technical patterns.
 
 ---
 
@@ -14,10 +17,16 @@ Stock Simulator is a high-performance, full-stack trading simulation platform th
 - **Dynamic Pricing**: Experience market volatility with simulated price movements and spikes.
 - **Portfolio Tracking**: Real-time P&L tracking, asset distribution, and transaction history.
 
+![Order Success](./images/Screenshot%202026-04-24%20154858.png)
+
+
 ### 🤖 2. Machine Learning Pattern Detection
 - **Automated Analysis**: A dedicated Python-based ML service scans market data for technical patterns (Double Top, Head and Shoulders, etc.).
 - **Signal Accuracy**: Each detection includes a confidence score, ensuring only high-probability signals are flagged.
 - **Visual Insights**: View detected patterns directly on interactive candlestick charts.
+
+![ML Analysis](./images/Screenshot%202026-04-24%20154828.png)
+
 
 ### 🔔 3. Intelligent Alert System
 - **Global Scanning**: Background engine scans all active stocks every 30 seconds for ML patterns.
@@ -28,6 +37,11 @@ Stock Simulator is a high-performance, full-stack trading simulation platform th
 - **Market Controls**: Admins can manually override stock prices or inject "volatility spikes" to simulate market crashes/booms.
 - **Fraud Detection**: Integrated system to monitor suspicious trading behavior and unusual win rates.
 - **Analytics Hub**: Visualize platform health with KPI cards, volume heatmaps, and sector distribution charts.
+
+![Admin Dashboard](./images/Screenshot%202026-04-24%20154944.png)
+![Admin Traders](./images/Screenshot%202026-04-24%20155026.png)
+![Admin Overview](./images/Screenshot%202026-04-24%20155714.png)
+
 
 ---
 
