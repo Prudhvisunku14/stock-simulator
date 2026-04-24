@@ -124,4 +124,3 @@ ML_API_URL=http://localhost:8000/predict
 
 ---
 
-*Built with ❤️ by Prudhvi Sunku*
