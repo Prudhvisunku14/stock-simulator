@@ -51,7 +51,7 @@ const predict = async (req, res) => {
     // Step 2: Call ML API
     let mlResponse;
     try {
-      const response = await axios.post(process.env.ML_API_URL || 'http://localhost:8000/predict', requestData, {
+      const response = await axios.post(process.env.ML_API_URL, requestData, {
         timeout: 10000 // 10 second timeout
       });
       
