@@ -1,15 +1,15 @@
 // config/db.js
-// PostgreSQL connection using pg with Supabase (production ready)
-
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Create connection pool using Supabase connection string
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+
+  family: 4 // ✅ FORCE IPv4 (CRITICAL FIX)
 });
 
 // Test DB connection on startup
